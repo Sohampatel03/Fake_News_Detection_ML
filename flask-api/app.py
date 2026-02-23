@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app)
 
 # ---------------------------
-# Load stopwords (NO download here)
+# Load stopwords
 # ---------------------------
 stop_words = set(stopwords.words('english'))
 
@@ -52,27 +52,34 @@ def predict():
         return jsonify({"error": "Text field is required"}), 400
 
     news_text = data["text"]
-
     cleaned_text = clean_text(news_text)
 
     # Safety check
-    if cleaned_text.strip() == "":
+    if cleaned_text.strip() == "" or len(cleaned_text.split()) < 25:
         return jsonify({
-            "prediction": "Fake News",
-            "reason": "Text too short or invalid after preprocessing"
+            "prediction": "Uncertain / Needs Verification",
+            "reason": "Text too short or insufficient context"
         })
 
     vectorized_text = vectorizer.transform([cleaned_text])
 
-    prediction = model.predict(vectorized_text)[0]
-    probabilities = model.predict_proba(vectorized_text)[0]
+    # Probabilities
+    proba = model.predict_proba(vectorized_text)[0]
+    fake_prob = float(proba[0])
+    real_prob = float(proba[1])
 
-    result = "Real News" if prediction == 1 else "Fake News"
+    # Threshold-based decision
+    if real_prob >= 0.65:
+        result = "Real News"
+    elif fake_prob >= 0.65:
+        result = "Fake News"
+    else:
+        result = "Uncertain / Needs Verification"
 
     return jsonify({
         "prediction": result,
-        "fake_probability": round(float(probabilities[0]), 4),
-        "real_probability": round(float(probabilities[1]), 4),
+        "fake_probability": round(fake_prob, 4),
+        "real_probability": round(real_prob, 4),
         "cleaned_text": cleaned_text
     })
 
