@@ -1,11 +1,12 @@
-import NewsForm from "./components/NewsForm";
+import { useState } from "react";
+import LandingPage from "./pages/LandingPage";
+import DetectionPage from "./pages/DetectionPage";
 
-function App() {
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <NewsForm />
-    </div>
-  );
+export default function App() {
+
+  const [page, setPage] = useState("landing");
+
+  return page === "landing"
+    ? <LandingPage onDetect={() => setPage("detect")} />
+    : <DetectionPage onBack={() => setPage("landing")} />;
 }
-
-export default App;

@@ -1,8 +1,11 @@
-import axios from "axios";
+export const predictNews = async (text) => {
+  const res = await fetch("http://localhost:5001/api/predict", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
 
-const API = axios.create({
-  baseURL: "http://localhost:5001/api"
-});
+  if (!res.ok) throw new Error("Prediction failed");
 
-export const predictNews = (text) =>
-  API.post("/predict", { text });
+  return res.json();
+};

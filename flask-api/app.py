@@ -102,9 +102,9 @@ def predict():
     # ---------------------------
     else:
 
-        if real_prob >= 0.65:
+        if real_prob >= 0.50:
             result = "Real News"
-        elif fake_prob >= 0.65:
+        elif fake_prob >= 0.60:
             result = "Fake News"
         else:
             result = "Uncertain / Needs Verification"
