@@ -11,37 +11,53 @@ from preprocess import clean_text
 # 1. LOAD DATASETS
 # ================================
 
-# Dataset 1: Kaggle (already binary: text,label -> 1/0)
+# Dataset 1: Kaggle (binary labels)
 data_kaggle = pd.read_csv("../dataset/fake_news.csv")
-
-# Ensure correct columns
 data_kaggle = data_kaggle[['text', 'label']]
 
-# Dataset 2: Indian English (label,text -> REAL/FAKE)
+# Dataset 2: Indian English (REAL/FAKE labels)
 data_indian = pd.read_csv("../dataset/news_dataset.csv")
 
-# Rename columns for consistency
 data_indian = data_indian.rename(columns={
     'label': 'label_text',
     'text': 'text'
 })
 
-# Convert REAL/FAKE to binary
 data_indian['label'] = data_indian['label_text'].map({
     'REAL': 1,
     'FAKE': 0
 })
 
-# Keep only required columns
 data_indian = data_indian[['text', 'label']]
-
-# Drop invalid rows
 data_indian = data_indian.dropna(subset=['label'])
+
+# Dataset 3: Indian headlines dataset
+data_headlines = pd.read_csv("../dataset/india-news-headlines.csv")
+
+# Keep only headline column
+data_headlines = data_headlines[['headline_text']]
+
+# Rename column
+data_headlines = data_headlines.rename(columns={
+    'headline_text': 'text'
+})
+
+# Label all headlines as REAL (trusted news source)
+data_headlines['label'] = 1
+
+# Limit headline dataset to avoid bias
+data_headlines = data_headlines.sample(n=20000, random_state=42)
 
 # ================================
 # 2. COMBINE DATASETS
 # ================================
-data = pd.concat([data_kaggle, data_indian], ignore_index=True)
+data = pd.concat([data_kaggle, data_indian, data_headlines], ignore_index=True)
+
+print("Dataset sizes:")
+print("Kaggle:", len(data_kaggle))
+print("Indian:", len(data_indian))
+print("Headlines:", len(data_headlines))
+print("Total:", len(data))
 
 # ================================
 # 3. CLEAN TEXT
@@ -62,9 +78,9 @@ X_train, X_test, y_train, y_test = train_test_split(
 # 5. TF-IDF VECTORIZATION
 # ================================
 vectorizer = TfidfVectorizer(
-    max_features=7000,
-    ngram_range=(1, 2),
-    min_df=3
+    max_features=8000,
+    ngram_range=(1,2),
+    min_df=2
 )
 
 X_train_vec = vectorizer.fit_transform(X_train)
@@ -75,6 +91,8 @@ X_test_vec = vectorizer.transform(X_test)
 # ================================
 model = LogisticRegression(max_iter=1000)
 model.fit(X_train_vec, y_train)
+
+print("\nLabel distribution:")
 print(data['label'].value_counts())
 
 # ================================
@@ -83,7 +101,7 @@ print(data['label'].value_counts())
 y_pred = model.predict(X_test_vec)
 accuracy = accuracy_score(y_test, y_pred)
 
-print(f"Model Accuracy: {accuracy * 100:.2f}%")
+print(f"\nModel Accuracy: {accuracy * 100:.2f}%")
 
 # ================================
 # 8. SAVE MODEL & VECTORIZER

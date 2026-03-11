@@ -4,6 +4,7 @@ import joblib
 import re
 import os
 from nltk.corpus import stopwords
+from utils.headline_features import sensationalism_score
 
 # ---------------------------
 # Flask app setup
@@ -54,34 +55,66 @@ def predict():
     news_text = data["text"]
     cleaned_text = clean_text(news_text)
 
-    # Safety check
-    if cleaned_text.strip() == "" or len(cleaned_text.split()) < 25:
+    if cleaned_text.strip() == "":
         return jsonify({
             "prediction": "Uncertain / Needs Verification",
-            "reason": "Text too short or insufficient context"
+            "reason": "Invalid or empty text"
         })
 
     vectorized_text = vectorizer.transform([cleaned_text])
 
-    # Probabilities
+    # Model probabilities
     proba = model.predict_proba(vectorized_text)[0]
     fake_prob = float(proba[0])
     real_prob = float(proba[1])
 
-    # Threshold-based decision
-    if real_prob >= 0.65:
-        result = "Real News"
-    elif fake_prob >= 0.65:
-        result = "Fake News"
-    else:
-        result = "Uncertain / Needs Verification"
+    word_count = len(cleaned_text.split())
 
-    return jsonify({
-        "prediction": result,
-        "fake_probability": round(fake_prob, 4),
-        "real_probability": round(real_prob, 4),
-        "cleaned_text": cleaned_text
-    })
+    # ---------------------------
+    # HEADLINE MODE
+    # ---------------------------
+    if word_count < 25:
+
+        sens_score = sensationalism_score(news_text)
+
+        final_fake_score = fake_prob * 0.7 + sens_score * 0.3
+
+        real_score = 1 - final_fake_score
+
+        if final_fake_score >= 0.65:
+            result = "Fake News"
+        
+        elif real_score >= 0.40:
+            result = "Real News"
+        
+        else:
+            result = "Uncertain / Needs Verification"
+
+        return jsonify({
+            "prediction": result,
+            "fake_probability": round(final_fake_score, 4),
+            "real_probability": round(1 - final_fake_score, 4),
+            "mode": "headline_analysis"
+        })
+
+    # ---------------------------
+    # ARTICLE MODE
+    # ---------------------------
+    else:
+
+        if real_prob >= 0.65:
+            result = "Real News"
+        elif fake_prob >= 0.65:
+            result = "Fake News"
+        else:
+            result = "Uncertain / Needs Verification"
+
+        return jsonify({
+            "prediction": result,
+            "fake_probability": round(fake_prob, 4),
+            "real_probability": round(real_prob, 4),
+            "mode": "article_analysis"
+        })
 
 # ---------------------------
 # Run server

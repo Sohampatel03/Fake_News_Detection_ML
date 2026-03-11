@@ -52,3 +52,5 @@ Thumbs.db
 ml-model/dataset/Fake.csv
 ml-model/dataset/True.csv
 ml-model/dataset/fake_news.csv
+ml-model/dataset/india-news-headlines.csv
+ml-model/dataset/news_dataset.csv
