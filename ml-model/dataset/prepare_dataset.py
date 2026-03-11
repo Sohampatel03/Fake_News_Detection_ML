@@ -19,5 +19,5 @@ data = data.sample(frac=1).reset_index(drop=True)
 # Save final dataset
 data.to_csv("fake_news.csv", index=False)
 
-print("✅ fake_news.csv created successfully")
+print("✅ fake_news.csv created successfull")
 print(data.head())
