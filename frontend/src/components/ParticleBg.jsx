@@ -7,8 +7,11 @@ const ParticleBg = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const setSize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    setSize();
 
     const particles = Array.from({ length: 60 }, () => ({
       x: Math.random() * canvas.width,
@@ -23,32 +26,37 @@ const ParticleBg = () => {
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       particles.forEach((p) => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(251,191,36,${p.alpha})`;
         ctx.fill();
-
         p.x += p.dx;
         p.y += p.dy;
-
         if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
         if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
       });
-
       raf = requestAnimationFrame(draw);
     };
 
     draw();
 
-    return () => cancelAnimationFrame(raf);
+    window.addEventListener("resize", setSize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", setSize);
+    };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: "fixed", inset: 0, zIndex: 0 }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: "none",   // ← fix: clicks pass through
+      }}
     />
   );
 };
