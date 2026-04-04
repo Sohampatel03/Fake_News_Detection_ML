@@ -3,6 +3,7 @@ from flask_cors import CORS
 import joblib
 import re
 import os
+import nltk
 from nltk.corpus import stopwords
 from utils.headline_features import sensationalism_score
 
@@ -11,7 +12,7 @@ from utils.headline_features import sensationalism_score
 # ---------------------------
 app = Flask(__name__)
 CORS(app)
-
+nltk.download('stopwords')
 # ---------------------------
 # Load stopwords
 # ---------------------------
@@ -120,4 +121,5 @@ def predict():
 # Run server
 # ---------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
