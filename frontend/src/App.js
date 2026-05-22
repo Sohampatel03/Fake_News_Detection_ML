@@ -6,7 +6,7 @@ const FLASK_PING_URL =
   (process.env.REACT_APP_API_URL || "http://localhost:5001")
     .replace(/\/$/, "") + "/api/ping";
 
-const WakeupScreen = ({ onReady }) => {
+const WakeupScreen = ({ onReady, onSkip }) => {
   const [dots, setDots] = useState("");
   const [seconds, setSeconds] = useState(0);
   const [status, setStatus] = useState("Pinging ML service...");
@@ -77,6 +77,7 @@ const WakeupScreen = ({ onReady }) => {
   return (
     <div
       style={{
+        position: "relative",
         minHeight: "100vh",
         background: "#080808",
         display: "flex",
@@ -85,6 +86,7 @@ const WakeupScreen = ({ onReady }) => {
         justifyContent: "center",
         fontFamily: "'Space Mono', monospace",
         padding: "2rem",
+        overflow: "hidden",
       }}
     >
       <style>{`
@@ -123,6 +125,47 @@ const WakeupScreen = ({ onReady }) => {
         }
       `}</style>
 
+      {/* Skip Button */}
+      <button
+        onClick={onSkip}
+        aria-label="Skip loading screen"
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 20,
+          width: 38,
+          height: 38,
+          borderRadius: "50%",
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.03)",
+          color: "#666",
+          cursor: "pointer",
+          fontSize: "1rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.2s ease",
+          backdropFilter: "blur(6px)",
+          zIndex: 10,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = "#fbbf24";
+          e.currentTarget.style.borderColor =
+            "rgba(251,191,36,0.3)";
+          e.currentTarget.style.background =
+            "rgba(251,191,36,0.08)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = "#666";
+          e.currentTarget.style.borderColor =
+            "rgba(255,255,255,0.08)";
+          e.currentTarget.style.background =
+            "rgba(255,255,255,0.03)";
+        }}
+      >
+        ✕
+      </button>
+
       {/* Logo */}
       <div
         style={{
@@ -137,6 +180,7 @@ const WakeupScreen = ({ onReady }) => {
         TRUTHSCAN
       </div>
 
+      {/* Subtitle */}
       <div
         style={{
           fontSize: "0.6rem",
@@ -208,7 +252,8 @@ const WakeupScreen = ({ onReady }) => {
           <div
             style={{
               height: "100%",
-              background: "linear-gradient(90deg, #92400e, #fbbf24)",
+              background:
+                "linear-gradient(90deg, #92400e, #fbbf24)",
               borderRadius: 4,
               animation: "barGrow 25s ease forwards",
             }}
@@ -288,7 +333,8 @@ const WakeupScreen = ({ onReady }) => {
             to wake up.
             <br />
             <br />
-            Hang tight — this only happens on the first visit! ☕
+            You can wait for the AI service to fully wake up
+            or skip directly into the app.
           </div>
         </div>
       )}
@@ -301,7 +347,10 @@ export default function App() {
   const [ready, setReady] = useState(false);
 
   return !ready ? (
-    <WakeupScreen onReady={() => setReady(true)} />
+    <WakeupScreen
+      onReady={() => setReady(true)}
+      onSkip={() => setReady(true)}
+    />
   ) : page === "landing" ? (
     <LandingPage onDetect={() => setPage("detect")} />
   ) : (
