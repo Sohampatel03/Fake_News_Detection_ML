@@ -8,7 +8,7 @@ const app = express();
 
 app.use(cors({
   origin: [
-    "https://your-frontend.vercel.app",
+    "fake-news-detection-ml-kohl.vercel.app",
     "http://localhost:3000"  // keep for local dev
   ]
 }));
