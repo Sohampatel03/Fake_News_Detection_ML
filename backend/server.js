@@ -16,9 +16,6 @@ app.use(cors({
   allowedHeaders: ["Content-Type"]
 }));
 
-// Handle preflight requests explicitly
-app.options("*", cors());
-
 app.use(express.json());
 app.use("/api", predictRoutes);
 
