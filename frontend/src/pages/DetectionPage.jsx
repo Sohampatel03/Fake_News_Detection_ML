@@ -30,9 +30,14 @@ setTimeout(() => {
     behavior: "smooth"
   });
 }, 200);
-    } catch {
-      setError("Could not reach prediction service. Make sure backend is running on port 5001.");
-    } finally {
+    } catch (err) {
+  // ADD THIS LINE
+  console.error("❌ Prediction error:", err.message);
+  
+  setError(
+    `Request failed: ${err.message}. Check browser console for details.`
+  );
+} finally {
       setLoading(false);
     }
   };
